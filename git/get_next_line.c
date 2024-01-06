@@ -1,0 +1,93 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abouram <abouram@student.1337.ma>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/15 00:28:35 by abouram           #+#    #+#             */
+/*   Updated: 2022/11/15 00:28:46 by abouram          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "get_next_line.h"
+
+char	*get_line_with_n(char *line_n)
+{
+	char	*return_v;
+	int		i;
+
+	i = 0;
+	while (line_n[i] && line_n[i] != '\n')
+		i++;
+	if (line_n[i] == '\n')
+		i++;
+	return_v = ft_calloc(i + 1, 1);
+	i = 0;
+	while (line_n[i] && line_n[i] != '\n')
+	{
+		return_v[i] = line_n[i];
+		i++;
+	}
+	if (line_n[i] && line_n[i] == '\n')
+		return_v[i] = line_n[i];
+	if (!return_v[0])
+	{
+		free(return_v);
+		return (NULL);
+	}
+	return (return_v);
+}
+
+char	*get_line_with_out_n(char *line_n)
+{
+	char	*clean_line;
+	int		i;
+
+	i = 0;
+	while (line_n[i] && line_n[i] != '\n')
+		i++;
+	clean_line = ft_calloc(ft_strlen(line_n) - i + 1, 1);
+	if (!clean_line)
+		return (NULL);
+	if (line_n[i] && line_n[i] == '\n')
+		i++;
+	if (line_n[i])
+		clean_line = ft_strjoin(clean_line, &line_n[i]);
+	free(line_n);
+	if (!clean_line[0])
+	{
+		free(clean_line);
+		return (NULL);
+	}
+	return (clean_line);
+}
+
+char	*get_next_line(int fd)
+{
+	char		*buffer;
+	static char	*line_n;
+	char		*return_v;
+	ssize_t		int_to_read;
+
+	int_to_read = 1;
+	if (fd < 0 || read(fd, 0, 0) < 0)
+	{
+		free(line_n);
+		line_n = NULL;
+		return (NULL);
+	}
+	buffer = ft_calloc(BUFFER_SIZE + 1, 1);
+	if (!line_n)
+		line_n = ft_calloc(1, 1);
+	while (int_to_read >= 1 && !(ft_strchr(buffer, '\n')))
+	{
+		int_to_read = read(fd, buffer, BUFFER_SIZE);
+		buffer[int_to_read] = '\0';
+		line_n = ft_strjoin(line_n, buffer);
+	}
+	free(buffer);
+	return_v = get_line_with_n(line_n);
+	line_n = get_line_with_out_n(line_n);
+	return (return_v);
+}
